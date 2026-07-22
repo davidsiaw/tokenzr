@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-RSpec.describe Base do
+RSpec.describe Tokenzr do
   it 'has a version number' do
-    expect(Base::VERSION).not_to be_nil
+    expect(Tokenzr::VERSION).not_to be_nil
   end
 end

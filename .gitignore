@@ -16,4 +16,5 @@ Gemfile.lock
 
 # crun.d
 .bundler
-.cmdsh
+.cmdsh*
+.pi-sessions/

@@ -14,12 +14,12 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.4'
         bundler-cache: true
-    - uses: reviewdog/action-rubocop@fcb74ba274da10b18d038d0bcddaae3518739634 # v2.21.2
+    - uses: reviewdog/action-rubocop@v2.22.0
       with:
         reporter: github-pr-review # Default is github-pr-check
         skip_install: true
