@@ -28,14 +28,15 @@ module Tokenzr
   #   Tokenizer.new(charset:)
   #
   class Charset
-    attr_accessor :text, :digits, :lone, :space, :quotes
+    attr_accessor :text, :digits, :lone, :space, :quotes, :operators
 
-    def initialize(text: nil, digits: nil, lone: nil, space: nil, quotes: nil)
+    def initialize(text: nil, digits: nil, lone: nil, space: nil, quotes: nil, operators: [])
       @text = text
       @digits = digits
       @lone = lone
       @space = space
       @quotes = quotes
+      @operators = operators
     end
 
     # Returns a fresh, mutable copy of the default charset.
@@ -45,7 +46,8 @@ module Tokenzr
         digits: '0123456789',
         lone: '()[]<>{}!#$%&*+,-./:;=?@\\^`|~',
         space: " \t\n\r\v\f",
-        quotes: "\"'"
+        quotes: "\"'",
+        operators: []
       )
     end
 

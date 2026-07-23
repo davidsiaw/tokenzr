@@ -13,10 +13,10 @@ module Tokenzr
       base = charset || Charset.default
       @charset = merge_overrides(base, overrides)
       conflicts = @charset.conflicts
-      return if conflicts.empty?
+      raise ConfigurationError, "Charset conflict: #{format_conflicts(conflicts)}" unless conflicts.empty?
 
-      details = conflicts.map { |c| "#{c.char.inspect} in #{c.sets.sort.join(', ')}" }.join('; ')
-      raise ConfigurationError, "Charset conflict: #{details}"
+      validate_operators!
+      build_operator_index
     end
 
     def text_chars
@@ -47,6 +47,7 @@ module Tokenzr
       @column = 1
       @cur_line = 1
       @cur_col = 1
+      @pushback = []
 
       while (chr = next_char(enum))
         start_line = @cur_line
@@ -96,7 +97,12 @@ module Tokenzr
         if lone_chars.include?(chr)
           results << current_token unless current_token.nil?
           current_token = nil
-          results << Token.new(chr, :lone, start_line, start_col)
+          op = match_operator(enum, chr, start_line, start_col)
+          if op
+            results << op
+          else
+            results << Token.new(chr, :lone, start_line, start_col)
+          end
           next
         end
 
@@ -117,11 +123,55 @@ module Tokenzr
         digits: overrides.fetch(:digits, base.digits),
         lone: overrides.fetch(:lone, base.lone),
         space: overrides.fetch(:space, base.space),
-        quotes: overrides.fetch(:quotes, base.quotes)
+        quotes: overrides.fetch(:quotes, base.quotes),
+        operators: overrides.fetch(:operators, base.operators)
       )
     end
 
+    def format_conflicts(conflicts)
+      conflicts.map { |c| "#{c.char.inspect} in #{c.sets.sort.join(', ')}" }.join('; ')
+    end
+
+    def validate_operators!
+      return if @charset.operators.nil? || @charset.operators.empty?
+
+      lone = lone_chars
+      @charset.operators.each do |op|
+        bad = op.chars.reject { |c| lone.include?(c) }
+        next if bad.empty?
+
+        raise ConfigurationError, "Operator #{op.inspect} contains chars not in the lone charset: #{bad.map(&:inspect).join(', ')}"
+      end
+    end
+
+    def build_operator_index
+      @operators_by_first = {}
+      return if @charset.operators.nil? || @charset.operators.empty?
+
+      @charset.operators.each do |op|
+        next if op.length < 2 # single-char ops are handled by lone_chars
+
+        (@operators_by_first[op[0]] ||= []) << op
+      end
+      # sort each group longest-first so the longest match wins
+      @operators_by_first.transform_values! { |ops| ops.sort_by { |o| -o.length } }
+    end
+
     def next_char(enum)
+      if @pushback.any?
+        chr, line, col = @pushback.pop
+        @cur_line = line
+        @cur_col = col
+        if chr == "\n"
+          @line = line + 1
+          @column = 1
+        else
+          @line = line
+          @column = col + 1
+        end
+        return chr
+      end
+
       pos_line = @line
       pos_col = @column
       chr = enum.next
@@ -139,8 +189,45 @@ module Tokenzr
     end
 
     def peek_char(enum)
+      return @pushback.last[0] if @pushback.any?
+
       enum.peek
     rescue StopIteration
+      nil
+    end
+
+    def push_back(chr, line, col)
+      @pushback.push([chr, line, col])
+    end
+
+    def match_operator(enum, first, line, column)
+      candidates = @operators_by_first[first]
+      return nil unless candidates
+
+      candidates.each do |op|
+        rest = op[1..]
+        consumed = []
+        matched = true
+
+        rest.each_char do |c|
+          got = next_char(enum)
+          break if got.nil?
+
+          consumed << [got, @cur_line, @cur_col]
+          next if got == c
+
+          matched = false
+          break
+        end
+
+        if matched && consumed.length == rest.length
+          return Token.new(op, :lone, line, column)
+        end
+
+        # push back consumed chars in reverse order
+        consumed.reverse_each { |c, l, col| push_back(c, l, col) }
+      end
+
       nil
     end
 
