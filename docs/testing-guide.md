@@ -15,10 +15,10 @@ spec/
 ├── spec_helper.rb                       # bundler/setup, RSpec config
 ├── tokenzr_spec.rb                      # version test (the gem loads)
 └── tokenzr/
-    ├── tokenizer_spec.rb                # core tokenization (98 tests)
-    ├── charset_spec.rb                  # Charset class contract (24 tests)
+    ├── tokenizer_spec.rb                # core tokenization (114 tests)
+    ├── charset_spec.rb                  # Charset class contract (20 tests)
     ├── charset_config_spec.rb           # Tokenizer + charset integration (12 tests)
-    ├── operators_spec.rb                # multi-char operators (20 tests)
+    ├── operators_spec.rb                # multi-char operators (19 tests)
     └── customization_examples_spec.rb   # realistic end-to-end examples (11 tests)
 ```
 

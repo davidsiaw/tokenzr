@@ -1,6 +1,6 @@
 # Tokenzr
 
-Tokenzr is a small, dependency-free Ruby tokenizer for the common cases. It breaks a string into tokens without needing a grammar or a hand-written scanner int identifiers, numbers (including floats, hex, and scientific notation), quoted strings, and symbols all work out of the box.
+Tokenzr is a small, dependency-free Ruby tokenizer for the common cases. It breaks a string into tokens without needing a grammar or a hand-written scanner — identifiers, numbers (including floats, hex, and scientific notation), quoted strings, and symbols all work out of the box.
 
 ## Installation
 

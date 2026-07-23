@@ -24,7 +24,8 @@ module Tokenzr
   # and pass it to {Tokenizer.new}:
   #
   #   charset = Tokenzr::Charset.default
-  #   charset.quotes = %q{"'`}
+  #   charset.lone = charset.lone.delete('`')
+  #   charset.quotes = charset.quotes + '`'
   #   Tokenizer.new(charset:)
   #
   class Charset

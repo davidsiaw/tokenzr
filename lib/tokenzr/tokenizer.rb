@@ -98,11 +98,7 @@ module Tokenzr
           results << current_token unless current_token.nil?
           current_token = nil
           op = match_operator(enum, chr, start_line, start_col)
-          if op
-            results << op
-          else
-            results << Token.new(chr, :lone, start_line, start_col)
-          end
+          results << (op || Token.new(chr, :lone, start_line, start_col))
           next
         end
 
@@ -140,7 +136,8 @@ module Tokenzr
         bad = op.chars.reject { |c| lone.include?(c) }
         next if bad.empty?
 
-        raise ConfigurationError, "Operator #{op.inspect} contains chars not in the lone charset: #{bad.map(&:inspect).join(', ')}"
+        raise ConfigurationError,
+              "Operator #{op.inspect} contains chars not in the lone charset: #{bad.map(&:inspect).join(', ')}"
       end
     end
 
@@ -220,9 +217,7 @@ module Tokenzr
           break
         end
 
-        if matched && consumed.length == rest.length
-          return Token.new(op, :lone, line, column)
-        end
+        return Token.new(op, :lone, line, column) if matched && consumed.length == rest.length
 
         # push back consumed chars in reverse order
         consumed.reverse_each { |c, l, col| push_back(c, l, col) }
