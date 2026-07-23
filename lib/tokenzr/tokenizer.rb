@@ -3,29 +3,40 @@
 require 'set'
 
 require 'tokenzr/error'
+require 'tokenzr/charset'
 require 'tokenzr/token'
 
 module Tokenzr
   # main tokenizer class
   class Tokenizer
+    def initialize(charset: nil, **overrides)
+      base = charset || Charset.default
+      @charset = merge_overrides(base, overrides)
+      conflicts = @charset.conflicts
+      return if conflicts.empty?
+
+      details = conflicts.map { |c| "#{c.char.inspect} in #{c.sets.sort.join(', ')}" }.join('; ')
+      raise ConfigurationError, "Charset conflict: #{details}"
+    end
+
     def text_chars
-      @text_chars ||= Set.new('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'.chars)
+      @text_chars ||= @charset.to_sets[:text]
     end
 
     def digit_chars
-      @digit_chars ||= Set.new('0123456789'.chars)
+      @digit_chars ||= @charset.to_sets[:digits]
     end
 
     def lone_chars
-      @lone_chars ||= Set.new('()[]<>{}!#$%&*+,-./:;=?@\\^`|~'.chars)
+      @lone_chars ||= @charset.to_sets[:lone]
     end
 
     def space_chars
-      @space_chars ||= Set.new(" \t\n\r\v\f".chars)
+      @space_chars ||= @charset.to_sets[:space]
     end
 
     def string_quotes
-      @string_quotes ||= Set.new(%q("').chars)
+      @string_quotes ||= @charset.to_sets[:quotes]
     end
 
     def parse(content)
@@ -97,6 +108,18 @@ module Tokenzr
     end
 
     private
+
+    def merge_overrides(base, overrides)
+      return base.dup unless overrides.any?
+
+      Charset.new(
+        text: overrides.fetch(:text, base.text),
+        digits: overrides.fetch(:digits, base.digits),
+        lone: overrides.fetch(:lone, base.lone),
+        space: overrides.fetch(:space, base.space),
+        quotes: overrides.fetch(:quotes, base.quotes)
+      )
+    end
 
     def next_char(enum)
       pos_line = @line

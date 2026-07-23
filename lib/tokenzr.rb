@@ -2,5 +2,6 @@
 
 require 'tokenzr/version'
 require 'tokenzr/error'
+require 'tokenzr/charset'
 require 'tokenzr/token'
 require 'tokenzr/tokenizer'
