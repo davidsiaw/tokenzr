@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['David Siaw']
   spec.email         = ['874280+davidsiaw@users.noreply.github.com']
 
-  spec.summary       = 'Tokenzr gem'
-  spec.description   = 'Tokenizer for most common cases of tokenization'
+  spec.summary       = 'Vibe coded tokenizer for common cases'
+  spec.description   = 'Tokenizer for most common cases of tokenization in programming languages'
   spec.homepage      = 'https://github.com/davidsiaw/tokenzr'
   spec.license       = 'MIT'
   spec.required_ruby_version = Gem::Requirement.new('>= 3.0')
